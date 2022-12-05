@@ -1,11 +1,16 @@
 import sys
 import time
-
+import argparse
 from bs4 import BeautifulSoup as beauty
 import cloudscraper
 import json
 import requests
 from tinydb import TinyDB, Query
+
+parser = argparse.ArgumentParser()
+parser.add_argument("--p_list", help="update all the ids of the players", default=False, action='store_true')
+parser.add_argument("--p_data", help="update all the players data", default=False, action='store_true')
+args = parser.parse_args()
 
 FUTBIN_API = "https://www.futbin.org/futbin/api/23/"
 FUTBIN_PLAYERS_LIST_PAGE = "https://www.futbin.com/players"
@@ -16,10 +21,13 @@ REQ_HEADERS = {
 def get_params(player_id: int):
     return f"fetchPlayerInformationAndroid?ID={player_id}&platform=PC"
 
-print("1. aggiorna lista players ID\n2. scarica dati completi")
-sel = int(input())
 
-if sel == 1:
+sel = -1
+if not args.p_list and not args.p_data:
+    print("1. aggiorna lista players ID\n2. scarica dati completi")
+    sel = int(input())
+
+if sel == 1 or args.p_list:
     all_players_id = []
 
     scraper = cloudscraper.create_scraper()
@@ -71,7 +79,7 @@ if sel == 1:
 
     print("finished")
 
-if sel == 2:
+if sel == 2 or args.p_data:
     db = TinyDB("players_db.json")
     file = open("data.txt", "r")
     player_id_list = json.load(file)["players"]
